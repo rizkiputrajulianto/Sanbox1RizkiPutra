@@ -36,28 +36,56 @@
         <div class="row border border-dark">
             <div class="col-sm-6 px-2 py-3">List Buku</div>
             <div class="col-sm-6 text-right px-2 py-2">
-                <button id="addclass" class="btn btn-info">Tambah Buku</button>
-            </div>
-            <div class="container">
-                <table class="table">
-                    <thead>
-                      <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">First</th>
-                        <th scope="col">Last</th>
-                        <th scope="col">Handle</th>
-                      </tr>
-                    </thead>
-                    <tbody id="list-Data">
-                      <tr>
-                        <th scope="row">1</th>
-                        <td>Mark</td>
-                        <td>Otto</td>
-                        <td>@mdo</td>
-                      </tr>
-                    </tbody>
-                  </table>
-            </div>
+                <button class="btn btn-info" data-toggle="modal" data-target="#exampleModal">Tambah Buku</button>
+               
+                <!-- Modal add-->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="form-nambah">
+        <div class="modal-body">
+              <div class="form-group">
+                  <label for="nama-nambah">Nama Buku</label>
+                  <input id="nama-nambah" class="form-control" type="text">
+              </div>
+              <div class="form-group">
+                  <label for="kategori-nambah">Kategori Buku</label>
+                  <select name="kategori" class="form-control" id="kategori-nambah">
+                      <option value="1">Premium</option>
+                      <option value="3">Biografi</option>
+                      <option value="4">Dongeng</option>
+                      <option value="6">Komik</option>
+                      <option value="7">Ensiklopedia</option>
+                  </select>
+              </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">First</th>
+        <th scope="col">Last</th>
+        <th scope="col">Handle</th>
+      </tr>
+    </thead>
+  <div id="list-data"></div>
+</table>
+</div>
+</div>
         </div>
     </div>
 
@@ -66,7 +94,78 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        
+        const API = `https://mybook-order.herokuapp.com/books/`
+        axios.get(API).then(response => console.log(response)).catch(err => console.log(err.message))
+        axios.get(API + "type/").then(response1 => console.log(response1)).catch(err => console.log(err.message))
+
+        const refreshData = () => {
+            axios.get(API)
+            .then(response2 => {
+                let data1 = response2.data.data
+                console.log(data1)
+                let toHtml = ""
+                data1.forEach(list => {
+                    toHtml += `
+                    <div class="col-sm-12">
+                    <tbody>
+                        <tr>
+                        <th scope="row">${data1[list]}</th>
+                        <td>${list.name}</td>
+                        <td>0</td>
+                        <td><button id="btn-delete" onclick="deleteData('${list.name}', ${list.id})">Delete</button></td>
+                      </tr>
+                    </tbody>`
+                });
+                $("#list-data").html(toHtml)
+            })
+            .catch(err => console.log(err.message))
+        }
+        refreshData()
+
+        const postData = async () => {
+            const dataPost = {
+                "name" : $("#nama-tambah").val(),
+                "type_books_id" : $("#kategori-tambah").val()
+            }
+            try {
+                const postProgress = await axios.post(API, dataPost)
+                alert("sukses")
+                refreshData()
+                $("#exampleModal").modal("hide")
+            } catch (err) {
+                console.log(err.message)
+            }
+        }
+
+
+        const deleteData = async (name, Id) => {
+            Swal.fire({
+  title: 'Are you sure?',
+  text: "You want to delete " + name,
+  icon: 'warning',
+  showCancelButton: true,
+}).then((result) => {
+  if (result.isConfirmed) {
+    
+  }
+})
+        }
+
+        const executeDelete = async (Id) => {
+            try {
+                const progress = await axios.delete(API + Id)
+                alert("sukses")
+                refreshData()
+                Swal.fire(
+                'Deleted!',
+                'Your file has been deleted.',
+                'success'
+                )
+            } catch (err) {
+                console.log(err.message)
+            }
+        }
+
     </script>
 </body>
 </html>
